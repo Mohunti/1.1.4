@@ -25,6 +25,7 @@ public class UserDaoJDBCImpl implements UserDao {
             Statement statement = connection.createStatement();
             statement.executeUpdate(myTable);
             statement.close();
+            connection.commit();
         } catch (SQLException e) {
             try {
                 connection.rollback();
@@ -42,12 +43,12 @@ public class UserDaoJDBCImpl implements UserDao {
     }
 
     public void dropUsersTable() {
-        String sql = "DROP TABLE if exists users ";
         Connection connection = null;
         try {
             connection = getConnection();
             Statement statement = connection.createStatement();
-            statement.executeUpdate(sql);
+            statement.executeUpdate("DROP TABLE if exists users ");
+            connection.commit();
         } catch (SQLException e) {
             try {
                 connection.rollback();
@@ -76,7 +77,7 @@ public class UserDaoJDBCImpl implements UserDao {
             preparedStatement.setString(3, String.valueOf(age));
             preparedStatement.executeUpdate();
             System.out.println("User с именем " + name + " добавлен в базу данных");
-            // System.out.println("saveUser работает");
+            connection.commit();
         } catch (SQLException e) {
             try {
                 connection.rollback();
@@ -98,7 +99,11 @@ public class UserDaoJDBCImpl implements UserDao {
         try {
             connection = getConnection();
             Statement statement = connection.createStatement();
-            statement.executeUpdate("DELETE FROM users WHERE Id = " + id);
+            String sql = "DELETE FROM users WHERE Id = (?)";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setLong(1, id);
+            preparedStatement.executeUpdate();
+            connection.commit();
         } catch (SQLException e) {
             try {
                 connection.rollback();
@@ -128,6 +133,7 @@ public class UserDaoJDBCImpl implements UserDao {
                 user.setLastName(resultSet.getString("lastName"));
                 user.setAge(resultSet.getByte("age"));
                 listUser.add(user);
+                connection.commit();
             }
         } catch (SQLException e) {
             try {
@@ -154,6 +160,7 @@ public class UserDaoJDBCImpl implements UserDao {
             Statement statement = connection.createStatement();
             String SQL = "TRUNCATE TABLE users";
             statement.executeUpdate(SQL);
+            connection.commit();
         } catch (SQLException e) {
             try {
                 connection.rollback();
